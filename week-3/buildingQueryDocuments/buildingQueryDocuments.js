@@ -71,10 +71,9 @@ for (var i=0; i<allOptions.length; i++) {
     queryMongoDB(query, i);
 }
 
-
 function queryMongoDB(query, queryNum) {
 
-    MongoClient.connect('mongodb://localhost:27017/crunchbase', function(err, db) {
+    MongoClient.connect(process.env.MONGO_URL, function(err, db) {
         
         assert.equal(err, null);
         console.log("Successfully connected to MongoDB for query: " + queryNum);
@@ -111,10 +110,11 @@ function queryDocument(options) {
     console.log(options);
     
     var query = {
-        "tag_list": /* TODO: Complete this statement to match the regular expression "social-networking" */        
+        "tag_list": { $regex: /social-networking/ }, /* TODO: Complete this statement to match the regular expression "social-networking" */
     };
 
     if (("firstYear" in options) && ("lastYear" in options)) {
+        query.founded_year = { $gte: options.firstYear, $lte: options.lastYear }
         /* 
            TODO: Write one line of code to ensure that if both firstYear and lastYear 
            appear in the options object, we will match documents that have a value for 
@@ -127,6 +127,7 @@ function queryDocument(options) {
     }
 
     if ("city" in options) {
+        query['offices.city'] = options.city;
         /* 
            TODO: Write one line of code to ensure that we do an equality match on the 
            "offices.city" field. The "offices" field stores an array in which each element 
@@ -142,7 +143,7 @@ function queryDocument(options) {
 
 function report(options) {
     var totalEmployees = 0;
-    for (key in companiesSeen) {
+    for (var key in companiesSeen) {
         totalEmployees = totalEmployees + companiesSeen[key].number_of_employees;
     }
 
