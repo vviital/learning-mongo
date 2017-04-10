@@ -74,7 +74,7 @@ for (var i=0; i<allOptions.length; i++) {
 
 function queryMongoDB(query, queryNum) {
 
-    MongoClient.connect('mongodb://localhost:27017/crunchbase', function(err, db) {
+    MongoClient.connect(process.env.MONGO_URL, function(err, db) {
         
         assert.equal(err, null);
         console.log("Successfully connected to MongoDB for query: " + queryNum);
@@ -111,6 +111,10 @@ function queryDocument(options) {
     var query = {};
 
     if ("overview" in options) {
+        query = { $or: [
+          { overview: { $regex: options.overview, $options: 'i' }},
+          { tag_list: { $regex: options.overview, $options: 'i'}}
+        ]};
         /*
            TODO: Write an assignment statement to ensure that if "overview" appears in the 
            options object, we will match documents that have the value of options.overview 
@@ -139,7 +143,7 @@ function queryDocument(options) {
 
 function report(options) {
     var totalEmployees = 0;
-    for (key in companiesSeen) {
+    for (var key in companiesSeen) {
         totalEmployees = totalEmployees + companiesSeen[key].number_of_employees;
     }
 
